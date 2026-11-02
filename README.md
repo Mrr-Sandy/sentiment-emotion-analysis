@@ -10,8 +10,54 @@ An MCA project that classifies English short texts in two independent tasks:
 The planned approach is supervised learning with **TF-IDF** features and **Logistic Regression**
 in **scikit-learn**.
 
-**Status:** Phase 1 (environment setup, data collection and exploratory data analysis) and
-Phase 2 (model training and evaluation) are complete. Both trained models are saved in `models/`.
+**Status:** Phase 1 (environment setup, data collection and exploratory data analysis),
+Phase 2 (model training and evaluation) and Phase 3 (the **Sentiment & Emotion Intelligence**
+Streamlit web app) are complete. Both trained models are saved in `models/`.
+
+## Web app: Sentiment & Emotion Intelligence
+
+*Machine Learning Based Text Sentiment and Emotion Analysis.*
+
+```powershell
+streamlit run app.py
+```
+
+Then open http://localhost:8501. The app loads the saved models once (cached) and never retrains.
+
+| Page | What it shows |
+|---|---|
+| **Home** | Project overview, both tasks, the model pipeline, dataset sizes, headline test results, technology stack |
+| **Text Analyzer** | Type or pick an example sentence; both models classify it independently and show the predicted sentiment and emotion, model confidence and the full probability distribution for every class |
+| **Model Performance** | Phase 2 test metrics (accuracy, macro / weighted precision, recall, F1), comparison chart, confusion matrices, per-class scores, and what each metric means |
+| **Dataset Analysis** | Split sizes, examples per class, key findings and the Phase 1 EDA charts, with sources and citations |
+
+Other features: sidebar navigation, light and dark themes (⋮ → Settings), layouts that adapt to
+phone screens, input validation (empty, too long, no words, words the models have never seen), and
+error messages that never expose file paths or stack traces.
+
+**Model architecture:** text → preprocessing (`src/preprocessing.py`, built into each saved
+vectorizer) → TF-IDF → Logistic Regression → class probabilities, run separately for sentiment and
+emotion. The app calls `load_classifier()` from `src/predict.py`; it has no preprocessing or
+vectorizer code of its own.
+
+### Screenshots
+
+<!-- Add screenshots here, e.g. docs/screenshots/home.png, analyzer.png, performance.png -->
+_Screenshots to be added._
+
+### Deploying to Streamlit Community Cloud
+
+1. Push the repository to GitHub (the app needs `app.py`, `webapp/`, `src/`, `models/`, `reports/`,
+   `.streamlit/config.toml` and `requirements.txt`; the raw data is not needed).
+2. At [share.streamlit.io](https://share.streamlit.io), choose **Create app**, select this
+   repository and branch `main`, and set the main file path to `app.py`.
+3. Under **Advanced settings**, choose Python **3.12** so the pinned packages (and the scikit-learn
+   version the models were saved with, 1.9.1) install as tested.
+4. Deploy. No secrets or API keys are required.
+
+The app code is in `app.py` (entry point and navigation) and `webapp/`: `inference.py` (input
+validation and prediction, no UI code), `resources.py` (cached loading of models and reports),
+`ui.py` (styling and charts) and `views/` (one file per page).
 
 ## Project structure
 
@@ -43,7 +89,14 @@ sentiment-emotion-analysis/
 ├── models/
 │   ├── sentiment/              # vectorizer.joblib, model.joblib, metadata.json
 │   └── emotion/                # vectorizer.joblib, model.joblib, metadata.json
-├── tests/                      # unit tests (python -m unittest)
+├── webapp/
+│   ├── inference.py            # input validation and prediction for the app (no UI code)
+│   ├── resources.py            # cached loading of models, metrics and report data
+│   ├── ui.py                   # shared styling, header, pipeline diagram and charts
+│   └── views/                  # home, analyzer, performance and dataset pages
+├── .streamlit/config.toml      # light/dark themes, hides error details from visitors
+├── app.py                      # Streamlit entry point
+├── tests/                      # unit and app tests (python -m unittest)
 ├── requirements.txt
 └── README.md
 ```
