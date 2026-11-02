@@ -10,8 +10,8 @@ An MCA project that classifies English short texts in two independent tasks:
 The planned approach is supervised learning with **TF-IDF** features and **Logistic Regression**
 in **scikit-learn**.
 
-**Status:** Phase 1 (environment setup, data collection and exploratory data analysis) is complete.
-Model training starts in Phase 2.
+**Status:** Phase 1 (environment setup, data collection and exploratory data analysis) and
+Phase 2 (model training and evaluation) are complete. Both trained models are saved in `models/`.
 
 ## Project structure
 
@@ -19,19 +19,31 @@ Model training starts in Phase 2.
 sentiment-emotion-analysis/
 ├── data/
 │   ├── raw/                    # downloaded CSVs (git-ignored, created by src/download_data.py)
-│   ├── processed/              # cleaned data for modelling (Phase 2)
+│   ├── processed/              # modelling data (git-ignored, created by src/prepare_data.py)
 │   └── README.md               # dataset details, licenses, citations
 ├── notebooks/
 │   ├── sentiment_eda.ipynb     # EDA for Task A
 │   └── emotion_eda.ipynb       # EDA for Task B
 ├── reports/
 │   ├── dataset_summary.md      # generated summary of both datasets
-│   └── figures/                # charts saved by the notebooks
+│   ├── model_evaluation.md     # generated evaluation report (Phase 2)
+│   ├── metrics/                # test metrics, classification reports, validation grids
+│   └── figures/                # charts from the notebooks and the evaluation
 ├── src/
 │   ├── download_data.py        # downloads both datasets at pinned revisions
 │   ├── eda.py                  # shared EDA helpers and chart style
-│   └── make_dataset_summary.py # writes reports/dataset_summary.md
-├── models/                     # trained models (Phase 2)
+│   ├── make_dataset_summary.py # writes reports/dataset_summary.md
+│   ├── preprocessing.py        # text cleaning + TF-IDF builder shared by training and inference
+│   ├── prepare_data.py         # builds data/processed/ from data/raw/
+│   ├── modeling.py             # model selection on validation, training, saving
+│   ├── train_sentiment.py      # trains the Task A model
+│   ├── train_emotion.py        # trains the Task B model
+│   ├── evaluate.py             # test-set evaluation, metrics, figures, report
+│   └── predict.py              # loads saved models and classifies new text
+├── models/
+│   ├── sentiment/              # vectorizer.joblib, model.joblib, metadata.json
+│   └── emotion/                # vectorizer.joblib, model.joblib, metadata.json
+├── tests/                      # unit tests (python -m unittest)
 ├── requirements.txt
 └── README.md
 ```
@@ -91,6 +103,88 @@ The full results are in [`reports/dataset_summary.md`](reports/dataset_summary.m
   class has no strong cue words and is likely to be the hardest class.
 - **Keep negations:** scikit-learn's built-in English stop-word list removes *not*, *no* and *never*,
   so it should not be used for sentiment.
+
+## Phase 2: models
+
+### Algorithms
+
+Each task has its own independent pipeline: **TF-IDF** features followed by a multinomial
+**Logistic Regression** classifier (scikit-learn, `lbfgs` solver).
+
+- **TF-IDF** (term frequency × inverse document frequency) turns each text into a sparse vector
+  with one weight per word or word pair (n-gram). A term's weight grows with how often it occurs in
+  the text (here sublinearly, `1 + log(tf)`) and shrinks with how many training texts contain it, so
+  words that appear everywhere (such as "feel" in the emotion data) count for little, and rarer,
+  more telling words count for more.
+- **Logistic Regression** learns one weight per feature and class and turns the weighted sum into
+  class probabilities with the softmax function. It is fast, works well with sparse TF-IDF
+  vectors, and its weights are easy to inspect. `C` controls regularisation strength, and
+  `class_weight="balanced"` gives rare classes more weight during training.
+
+### Preprocessing
+
+`src/preprocessing.py` defines `clean_text()`, which is built into every saved vectorizer, so
+training and prediction always clean text the same way. It decodes escape sequences and HTML
+entities (Phase 1's `decode_artifacts`), lowercases, replaces URLs and @mentions with placeholder
+words, strips `#` from hashtags and spells negations out as `not` (`don't`, `dont` → `do not`). No
+stop-word list is used, so *not*, *no* and *never* survive, and `!`, `?`, emoticons and emoji are
+kept as tokens.
+
+### Training and evaluation
+
+1. `src/prepare_data.py` copies the Phase 1 splits to `data/processed/`. In the training split it
+   removes texts that carry conflicting labels and keeps one copy of exact duplicates (32 sentiment
+   and 61 emotion rows). Validation and test are used unchanged; `data/raw/` is never modified.
+2. `src/train_sentiment.py` and `src/train_emotion.py` try 4 TF-IDF configurations (unigrams;
+   unigrams + bigrams capped at 20k, at 50k, or uncapped; all with `min_df=2`, `max_df=0.95`) × 7
+   values of `C` (0.25-16) × `class_weight` None or `"balanced"`: 56 candidates per task. The
+   vectorizer is fitted on the training split only. The candidate with the best **validation macro
+   F1** is refitted on the training split and saved. Random seeds are fixed (`random_state=42`).
+3. `src/evaluate.py` runs the saved models once on the untouched test splits and writes accuracy,
+   per-class and macro/weighted precision, recall and F1, classification reports, confusion
+   matrices and charts to `reports/`, plus [`reports/model_evaluation.md`](reports/model_evaluation.md).
+
+```powershell
+python src/prepare_data.py
+python src/train_sentiment.py
+python src/train_emotion.py
+python src/evaluate.py
+python -m unittest discover -s tests -v
+```
+
+### Results (test splits)
+
+| Metric | Sentiment (TweetEval) | Emotion (dair-ai) |
+|---|---:|---:|
+| Accuracy | 59.8% | 88.4% |
+| Macro precision | 58.8% | 81.9% |
+| Macro recall | 60.2% | 87.1% |
+| **Macro F1** | **59.4%** | **84.0%** |
+| Weighted F1 | 59.8% | 88.7% |
+| Selected TF-IDF | unigrams + bigrams, 95,413 features | unigrams, 7,219 features |
+| Selected Logistic Regression | C = 4, balanced | C = 4, balanced |
+| Validation macro F1 | 66.6% | 87.7% |
+
+The sentiment model scores 7 points lower on test than on validation, as expected from the test
+split's different class mix (Phase 1); most of its errors are between `neutral` and the two polar
+classes. The emotion model's weakest classes are the smallest ones, `surprise` (F1 69.3%) and
+`love` (77.7%), which it mostly confuses with `fear` and `joy`. Details, confusion matrices and
+per-class scores are in [`reports/model_evaluation.md`](reports/model_evaluation.md).
+
+### Using the saved models
+
+```python
+import sys; sys.path.insert(0, "src")
+from predict import load_classifier
+
+sentiment = load_classifier("sentiment")
+sentiment.predict(["Worst customer service ever."])        # ['negative']
+load_classifier("emotion").predict_proba(["i feel nervous about my exam"])
+```
+
+Each `models/<task>/` folder holds `vectorizer.joblib`, `model.joblib` and `metadata.json` (classes,
+selected configuration, validation scores, dataset revision, library versions). `load_classifier`
+refuses artifacts built with a different preprocessing version.
 
 ## Data licenses
 

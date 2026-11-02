@@ -1,0 +1,64 @@
+{
+  "task": "emotion",
+  "labels": [
+    "sadness",
+    "joy",
+    "love",
+    "anger",
+    "fear",
+    "surprise"
+  ],
+  "model_classes": [
+    "anger",
+    "fear",
+    "joy",
+    "love",
+    "sadness",
+    "surprise"
+  ],
+  "tfidf": {
+    "name": "unigrams",
+    "ngram_range": [
+      1,
+      1
+    ],
+    "min_df": 2,
+    "max_df": 0.95,
+    "max_features": null,
+    "n_features": 7219,
+    "sublinear_tf": true,
+    "token_pattern": "(?u)\\b\\w\\w+\\b|[!?]|[:;=]-?[()dp]|[\ud83c\udf00-\ud83e\udeff\u2600-\u27bf]"
+  },
+  "logistic_regression": {
+    "C": 4.0,
+    "class_weight": "balanced",
+    "max_iter": 3000,
+    "solver": "lbfgs",
+    "random_state": 42
+  },
+  "preprocessing": {
+    "function": "preprocessing.clean_text",
+    "version": 1
+  },
+  "validation": {
+    "macro_f1": 0.8771,
+    "weighted_f1": 0.8997,
+    "accuracy": 0.8985,
+    "best_macro_f1_by_class_weight": {
+      "balanced": 0.8771,
+      "none": 0.8648
+    },
+    "candidates": 56
+  },
+  "data": {
+    "dataset": "dair-ai/emotion",
+    "config": "split",
+    "revision": "cab853a1dbdf4c42c2b3ef2173804746df8825fe",
+    "train_rows": 15939
+  },
+  "versions": {
+    "python": "3.12.10",
+    "scikit-learn": "1.9.1"
+  },
+  "trained_at": "2026-11-02T21:00:59+00:00"
+}

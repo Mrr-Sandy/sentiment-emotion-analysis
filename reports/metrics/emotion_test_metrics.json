@@ -1,0 +1,173 @@
+{
+  "task": "emotion",
+  "test_rows": 2000,
+  "accuracy": 0.884,
+  "macro_precision": 0.8190194575920341,
+  "macro_recall": 0.870608604716148,
+  "macro_f1": 0.8401598891678167,
+  "weighted_precision": 0.8937299867441524,
+  "weighted_recall": 0.884,
+  "weighted_f1": 0.8867891365545069,
+  "per_class": {
+    "sadness": {
+      "precision": 0.9522935779816514,
+      "recall": 0.8932874354561101,
+      "f1": 0.9218472468916519,
+      "support": 581
+    },
+    "joy": {
+      "precision": 0.9418070444104135,
+      "recall": 0.8848920863309353,
+      "f1": 0.9124629080118695,
+      "support": 695
+    },
+    "love": {
+      "precision": 0.6911764705882353,
+      "recall": 0.8867924528301887,
+      "f1": 0.7768595041322314,
+      "support": 159
+    },
+    "anger": {
+      "precision": 0.8689655172413793,
+      "recall": 0.9163636363636364,
+      "f1": 0.8920353982300885,
+      "support": 275
+    },
+    "fear": {
+      "precision": 0.8506787330316742,
+      "recall": 0.8392857142857143,
+      "f1": 0.8449438202247191,
+      "support": 224
+    },
+    "surprise": {
+      "precision": 0.6091954022988506,
+      "recall": 0.803030303030303,
+      "f1": 0.6928104575163399,
+      "support": 66
+    }
+  },
+  "confusion_matrix": {
+    "labels": [
+      "sadness",
+      "joy",
+      "love",
+      "anger",
+      "fear",
+      "surprise"
+    ],
+    "matrix": [
+      [
+        519,
+        13,
+        7,
+        23,
+        14,
+        5
+      ],
+      [
+        4,
+        615,
+        53,
+        7,
+        4,
+        12
+      ],
+      [
+        1,
+        15,
+        141,
+        1,
+        0,
+        1
+      ],
+      [
+        8,
+        6,
+        1,
+        252,
+        8,
+        0
+      ],
+      [
+        11,
+        0,
+        2,
+        7,
+        188,
+        16
+      ],
+      [
+        2,
+        4,
+        0,
+        0,
+        7,
+        53
+      ]
+    ]
+  },
+  "model": {
+    "task": "emotion",
+    "labels": [
+      "sadness",
+      "joy",
+      "love",
+      "anger",
+      "fear",
+      "surprise"
+    ],
+    "model_classes": [
+      "anger",
+      "fear",
+      "joy",
+      "love",
+      "sadness",
+      "surprise"
+    ],
+    "tfidf": {
+      "name": "unigrams",
+      "ngram_range": [
+        1,
+        1
+      ],
+      "min_df": 2,
+      "max_df": 0.95,
+      "max_features": null,
+      "n_features": 7219,
+      "sublinear_tf": true,
+      "token_pattern": "(?u)\\b\\w\\w+\\b|[!?]|[:;=]-?[()dp]|[\ud83c\udf00-\ud83e\udeff\u2600-\u27bf]"
+    },
+    "logistic_regression": {
+      "C": 4.0,
+      "class_weight": "balanced",
+      "max_iter": 3000,
+      "solver": "lbfgs",
+      "random_state": 42
+    },
+    "preprocessing": {
+      "function": "preprocessing.clean_text",
+      "version": 1
+    },
+    "validation": {
+      "macro_f1": 0.8771,
+      "weighted_f1": 0.8997,
+      "accuracy": 0.8985,
+      "best_macro_f1_by_class_weight": {
+        "balanced": 0.8771,
+        "none": 0.8648
+      },
+      "candidates": 56
+    },
+    "data": {
+      "dataset": "dair-ai/emotion",
+      "config": "split",
+      "revision": "cab853a1dbdf4c42c2b3ef2173804746df8825fe",
+      "train_rows": 15939
+    },
+    "versions": {
+      "python": "3.12.10",
+      "scikit-learn": "1.9.1"
+    },
+    "trained_at": "2026-11-02T21:00:59+00:00"
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "task": "sentiment",
+  "test_rows": 12284,
+  "accuracy": 0.5978508629111039,
+  "macro_precision": 0.5876554628849545,
+  "macro_recall": 0.6015123330222901,
+  "macro_f1": 0.5935515607537348,
+  "weighted_precision": 0.6007679391651887,
+  "weighted_recall": 0.5978508629111039,
+  "weighted_f1": 0.5983889165232141,
+  "per_class": {
+    "negative": {
+      "precision": 0.5772847841813359,
+      "recall": 0.6027190332326284,
+      "f1": 0.5897277989900234,
+      "support": 3972
+    },
+    "neutral": {
+      "precision": 0.6375250958204052,
+      "recall": 0.5883442816237157,
+      "f1": 0.611948142957253,
+      "support": 5937
+    },
+    "positive": {
+      "precision": 0.5481565086531226,
+      "recall": 0.6134736842105263,
+      "f1": 0.578978740313928,
+      "support": 2375
+    }
+  },
+  "confusion_matrix": {
+    "labels": [
+      "negative",
+      "neutral",
+      "positive"
+    ],
+    "matrix": [
+      [
+        2394,
+        1290,
+        288
+      ],
+      [
+        1531,
+        3493,
+        913
+      ],
+      [
+        222,
+        696,
+        1457
+      ]
+    ]
+  },
+  "model": {
+    "task": "sentiment",
+    "labels": [
+      "negative",
+      "neutral",
+      "positive"
+    ],
+    "model_classes": [
+      "negative",
+      "neutral",
+      "positive"
+    ],
+    "tfidf": {
+      "name": "uni+bigrams, all",
+      "ngram_range": [
+        1,
+        2
+      ],
+      "min_df": 2,
+      "max_df": 0.95,
+      "max_features": null,
+      "n_features": 95413,
+      "sublinear_tf": true,
+      "token_pattern": "(?u)\\b\\w\\w+\\b|[!?]|[:;=]-?[()dp]|[\ud83c\udf00-\ud83e\udeff\u2600-\u27bf]"
+    },
+    "logistic_regression": {
+      "C": 4.0,
+      "class_weight": "balanced",
+      "max_iter": 3000,
+      "solver": "lbfgs",
+      "random_state": 42
+    },
+    "preprocessing": {
+      "function": "preprocessing.clean_text",
+      "version": 1
+    },
+    "validation": {
+      "macro_f1": 0.6662,
+      "weighted_f1": 0.6889,
+      "accuracy": 0.6865,
+      "best_macro_f1_by_class_weight": {
+        "balanced": 0.6662,
+        "none": 0.655
+      },
+      "candidates": 56
+    },
+    "data": {
+      "dataset": "cardiffnlp/tweet_eval",
+      "config": "sentiment",
+      "revision": "b3a375baf0f409c77e6bc7aa35102b7b3534f8be",
+      "train_rows": 45583
+    },
+    "versions": {
+      "python": "3.12.10",
+      "scikit-learn": "1.9.1"
+    },
+    "trained_at": "2026-11-02T20:59:53+00:00"
+  }
+}
