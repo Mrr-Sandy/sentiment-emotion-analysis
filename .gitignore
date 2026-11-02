@@ -1,0 +1,30 @@
+# Virtual environment
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Datasets are downloaded/derived by scripts in src/, not committed
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+.cache/
+
+# Temporary / OS files
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
